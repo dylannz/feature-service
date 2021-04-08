@@ -1,0 +1,12 @@
+version: 1.0
+
+features:
+
+  stripe_billing:
+    rules:
+      - field: "customer_id"
+        include:
+          - "111"
+        exclude:
+          - "222"
+

@@ -1,0 +1,11 @@
+version: 1.0
+
+features:
+
+  profile_page_v2:
+    rules:
+      - fields:
+          - "email"
+          - "customer_id"
+        weight: 10
+

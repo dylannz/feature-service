@@ -1,0 +1,5 @@
+output:
+  spec/spec.gen.go
+package: spec
+generate:
+  - chi-server

@@ -1,0 +1,6 @@
+output:
+  spec/types.gen.go
+package: spec
+generate:
+  - types
+  - skip-prune

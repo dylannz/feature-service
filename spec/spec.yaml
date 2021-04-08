@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Feature service
+  description: A service that tells you which features are enabled.
+  version: 1.0.0
+
+components:
+  schemas:
+    FeatureStatus:
+      properties:
+        enabled:
+          type: boolean
+    FeaturesRequest:
+      properties:
+        vars:
+          type: object
+    FeaturesResponse:
+      properties:
+        features:
+          type: object
+          x-go-type: map[string]FeatureStatus
+          additionalProperties:
+            schema:
+              $ref: '#/components/schemas/FeatureStatus'
+
+paths:
+  /features/status:
+    post:
+      summary: Fetches a list of enabled features.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeaturesRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturesResponse'
+
+  /features/status/{feature}:
+    post:
+      summary: Tells you if a specific feature is enabled.
+      parameters:
+        - name: feature
+          in: path
+          required: true
+          description: The name of the feature to check.
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeaturesRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturesResponse'

@@ -1,0 +1,22 @@
+version: 1.0
+
+features:
+
+  stripe_billing:
+    rules:
+      - field: "customer_id"
+        weight: 50
+        include:
+          - "123"
+          - "456"
+        exclude:
+          - "234"
+          - "567"
+
+  profile_page_v2:
+    rules:
+      - fields:
+          - "email"
+          - "customer_id"
+        weight: 10
+
