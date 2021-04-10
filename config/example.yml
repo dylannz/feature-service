@@ -5,18 +5,25 @@ features:
   stripe_billing:
     rules:
       - field: "customer_id"
-        weight: 50
-        include:
+        weight: 50 # 50% chance that the feature will be enabled for the given customer_id
+        include: # explicitly include customer IDs 123 and 456
           - "123"
           - "456"
-        exclude:
+        exclude: # explicitly exclude customers 234 and 567 (these override include rules)
           - "234"
           - "567"
+      - field: "customer_name"
+        include:
+          - "Alex" # enable the feature for any customer named 'Alex'
 
   profile_page_v2:
     rules:
+      # the following fields in the JSON request body will be combined and hashed:
       - fields:
           - "email"
           - "customer_id"
+
+        # 10% chance that a customer with any given email/customer_id combination
+        # will have the feature enabled.
         weight: 10
 
