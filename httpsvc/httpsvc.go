@@ -8,6 +8,7 @@ import (
 
 	"github.com/dylannz/feature-service/reqcontext"
 	"github.com/dylannz/feature-service/spec"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,7 @@ func NewHTTPHandler(logger logrus.FieldLogger, service Service) http.Handler {
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 	r.MethodFunc(http.MethodGet, "/health", svc.handleHealth)
 
 	return spec.HandlerFromMux(svc, r)

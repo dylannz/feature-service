@@ -50,5 +50,6 @@ func main() {
 
 	svc := service.NewService(logger, config)
 	h := httpsvc.NewHTTPHandler(logger, svc)
+	logger.Info("listening for http traffic on: ", e.HTTPAddr)
 	logger.Fatal(http.ListenAndServe(e.HTTPAddr, h))
 }
