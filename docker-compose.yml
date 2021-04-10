@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+    feature:
+        build: .
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./config:/app/config
+        environment:
+            HTTP_ADDR: ":3000"
