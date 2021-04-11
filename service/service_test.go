@@ -186,7 +186,7 @@ var _ = Describe("service", func() {
 		Entry(
 			"with no feature name, it returns all enabled features",
 			cfgCombined(),
-			newFeaturesRequest(map[string]interface{}{"customer_id": "1"}),
+			newFeaturesRequest(map[string]interface{}{"customer_id": "2"}),
 			"",
 			spec.NewFeaturesResponse().
 				AddStatus("stripe_billing", true, nil).
