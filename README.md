@@ -1,5 +1,7 @@
 # feature-service
 
+**Note:** This is a work in progress. I'll attempt to keep backward compatibility with all changes, but like many things in life, there are no guarantees.
+
 This is a stateless feature flag service built in Go. It's designed to be operated in Kubernetes with configuration mounted to the volume via a [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/), however there is no Kubernetes-specific code so it should work fine on other platforms.
 
 The repository includes:
