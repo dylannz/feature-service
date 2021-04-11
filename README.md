@@ -26,11 +26,13 @@ The service allows some configuration via environment variables:
 
 ## Examples
 
-One of the features of the service is that it allows arbitrary fields in the "vars" parameter within the JSON body. You can use this to include information about the user such as their user ID or name. See config/example.yml for example YAML configurations, they have some annotations in there explaining what's going on}. Some example requests are below.
+See config/example.yml for example YAML configurations, they have some annotations in there explaining what's going on}. Some example requests are below, the responses were generated using the example configuration in config/example.yml.
 
 ### Get the status of a feature
 
-Using custom variable 'customer_id':
+One of the features of the service is that it allows arbitrary key/value pairs in the "vars" parameter within the JSON request body. You can use this to include information about the user such as their user ID or name, which can then be used to evaluate whether a feature is enabled or not.
+
+Here is an example using custom variable 'customer_id':
 
 ```bash
 curl -XPOST localhost:3000/features/status/stripe_billing -d '{"vars":{"customer_id":"1"}}' | jq
@@ -56,7 +58,7 @@ curl -XPOST localhost:3000/features/status/stripe_billing -d '{"vars":{"customer
 }
 ```
 
-Using custom variable 'customer_id' (showing custom vars in response):
+Using custom variable 'customer_id'. Note it also returns the custom variables which are only enabled for customer ID '123':
 
 ```bash
 curl -XPOST localhost:3000/features/status/stripe_billing -d '{"vars":{"customer_id":"123"}}' | jq
