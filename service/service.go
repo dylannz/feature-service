@@ -185,7 +185,7 @@ func ruleWeight(logger logrus.FieldLogger, fields []string, weight int, vars map
 		n <<= 8
 		n |= uint64(uint8(h[i]))
 	}
-	c := int(n % 100)
+	c := int(n%100) + 1 // we need a number from 1-100 (inclusive)
 	t := c < weight
 	logger.Debugf("check: hash result < weight (%d < %d): %t", c, weight, t)
 	return t
