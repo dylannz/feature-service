@@ -22,6 +22,16 @@ var _ = Describe("cfg", func() {
 									Weight: 10,
 								},
 							},
+							SetVars: []SetVarRule{
+								{
+									Fields: []string{"customer_id"},
+									Weight: 50,
+									Set: map[string]interface{}{
+										"int_key":    1337,
+										"string_key": "my_string_value",
+									},
+								},
+							},
 						},
 					},
 					"stripe_billing": {

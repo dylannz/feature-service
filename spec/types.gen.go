@@ -5,7 +5,8 @@ package spec
 
 // FeatureStatus defines model for FeatureStatus.
 type FeatureStatus struct {
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled *bool                   `json:"enabled,omitempty"`
+	Vars    *map[string]interface{} `json:"vars,omitempty"`
 }
 
 // FeaturesRequest defines model for FeaturesRequest.

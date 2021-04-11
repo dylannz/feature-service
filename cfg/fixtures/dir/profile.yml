@@ -9,4 +9,11 @@ features:
             - "email"
             - "customer_id"
           weight: 10
+      set_vars:
+        - fields:
+            - "customer_id"
+          weight: 50
+          set:
+            int_key: 1337
+            string_key: "my_string_value"
 

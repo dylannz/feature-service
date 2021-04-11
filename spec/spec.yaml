@@ -10,6 +10,8 @@ components:
       properties:
         enabled:
           type: boolean
+        vars:
+          type: object
     FeaturesRequest:
       properties:
         vars:

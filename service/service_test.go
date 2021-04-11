@@ -130,6 +130,34 @@ var _ = Describe("service", func() {
 		return c
 	}
 
+	cfgSetVars := func() cfg.Config {
+		return cfg.Config{
+			Version: "1.0",
+			Features: map[string]cfg.Feature{
+				"profile_page_v2": {
+					Rules: cfg.Rules{
+						Enable: []cfg.EnableRule{
+							{
+								Fields: []string{"customer_id"},
+								Values: cfg.MatchValues{Eq: []string{"123", "321"}},
+							},
+						},
+						SetVars: []cfg.SetVarRule{
+							{
+								Fields: []string{"email", "customer_id"},
+								Values: cfg.MatchValues{Eq: []string{"123"}},
+								Set: map[string]interface{}{
+									"int_key":    12345,
+									"string_key": "my_string_value",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
 	newFeaturesRequest := func(vars map[string]interface{}) spec.FeaturesRequest {
 		return spec.FeaturesRequest{
 			Vars: &vars,
@@ -160,7 +188,9 @@ var _ = Describe("service", func() {
 			cfgCombined(),
 			newFeaturesRequest(map[string]interface{}{"customer_id": "1"}),
 			"",
-			spec.NewFeaturesResponse().AddStatus("stripe_billing", true).AddStatus("profile_page_v2", true),
+			spec.NewFeaturesResponse().
+				AddStatus("stripe_billing", true, nil).
+				AddStatus("profile_page_v2", true, nil),
 			"",
 		),
 		Entry(
@@ -168,7 +198,7 @@ var _ = Describe("service", func() {
 			cfgStripeInclude(),
 			newFeaturesRequest(map[string]interface{}{"customer_id": "123"}),
 			"",
-			spec.NewFeaturesResponse().AddStatus("stripe_billing", true),
+			spec.NewFeaturesResponse().AddStatus("stripe_billing", true, nil),
 			"",
 		),
 		Entry(
@@ -208,7 +238,7 @@ var _ = Describe("service", func() {
 			cfgCombined(),
 			newFeaturesRequest(map[string]interface{}{"customer_id": "1"}),
 			"stripe_billing",
-			spec.NewFeaturesResponse().AddStatus("stripe_billing", true),
+			spec.NewFeaturesResponse().AddStatus("stripe_billing", true, nil),
 			"",
 		),
 		Entry(
@@ -218,6 +248,30 @@ var _ = Describe("service", func() {
 			"stripe_billing",
 			nil,
 			"unknown feature: 'stripe_billing'",
+		),
+		Entry(
+			"vars are returned when they have been configured",
+			cfgSetVars(),
+			newFeaturesRequest(map[string]interface{}{"customer_id": "123"}),
+			"profile_page_v2",
+			spec.NewFeaturesResponse().
+				AddStatus(
+					"profile_page_v2",
+					true,
+					map[string]interface{}{
+						"int_key":    12345,
+						"string_key": "my_string_value",
+					},
+				),
+			"",
+		),
+		Entry(
+			"vars are not returned when they don't meet the set_vars rules",
+			cfgSetVars(),
+			newFeaturesRequest(map[string]interface{}{"customer_id": "321"}),
+			"profile_page_v2",
+			spec.NewFeaturesResponse().AddStatus("profile_page_v2", true, nil),
+			"",
 		),
 	)
 })

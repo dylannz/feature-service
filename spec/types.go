@@ -1,17 +1,20 @@
 package spec
 
 func NewFeaturesResponse() *FeaturesResponse {
-	return &FeaturesResponse{}
+	return &FeaturesResponse{
+		Features: &map[string]FeatureStatus{},
+	}
 }
 
-func (r *FeaturesResponse) AddStatus(featureName string, enabled bool) *FeaturesResponse {
-	if r.Features == nil {
-		r.Features = &map[string]FeatureStatus{}
-	}
-
-	(*r.Features)[featureName] = FeatureStatus{
+func (r *FeaturesResponse) AddStatus(featureName string, enabled bool, vars map[string]interface{}) *FeaturesResponse {
+	s := FeatureStatus{
 		Enabled: &enabled,
 	}
 
+	if len(vars) > 0 {
+		s.Vars = &vars
+	}
+
+	(*r.Features)[featureName] = s
 	return r
 }
