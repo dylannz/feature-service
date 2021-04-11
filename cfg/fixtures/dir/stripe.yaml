@@ -4,12 +4,17 @@ features:
 
   stripe_billing:
     rules:
-      - field: "customer_id"
-        weight: 50
-        include:
-          - "123"
-          - "456"
-        exclude:
-          - "234"
-          - "567"
+      enable:
+        - field: "customer_id"
+          weight: 50
+          values:
+            eq:
+              - "123"
+              - "456"
+      disable:
+        - field: "customer_id"
+          values:
+            eq:
+              - "234"
+              - "567"
 

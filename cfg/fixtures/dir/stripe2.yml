@@ -4,9 +4,14 @@ features:
 
   stripe_billing:
     rules:
-      - field: "customer_id"
-        include:
-          - "111"
-        exclude:
-          - "222"
+      enable:
+        - field: "customer_id"
+          values:
+            eq:
+              - "111"
+      disable:
+        - field: "customer_id"
+          values:
+            eq:
+              - "222"
 

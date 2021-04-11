@@ -18,10 +18,12 @@ var _ = Describe("service", func() {
 			Version: "1.0",
 			Features: map[string]cfg.Feature{
 				"profile_page_v2": {
-					Rules: []cfg.Rule{
-						{
-							Fields: []string{"email", "customer_id"},
-							Weight: 10,
+					Rules: cfg.Rules{
+						Enable: []cfg.EnableRule{
+							{
+								Fields: []string{"email", "customer_id"},
+								Weight: 10,
+							},
 						},
 					},
 				},
@@ -34,10 +36,14 @@ var _ = Describe("service", func() {
 			Version: "1.0",
 			Features: map[string]cfg.Feature{
 				"stripe_billing": {
-					Rules: []cfg.Rule{
-						{
-							Field:   "customer_id",
-							Include: []string{"123"},
+					Rules: cfg.Rules{
+						Enable: []cfg.EnableRule{
+							{
+								Field: "customer_id",
+								Values: cfg.MatchValues{
+									Eq: []string{"123"},
+								},
+							},
 						},
 					},
 				},
@@ -50,10 +56,14 @@ var _ = Describe("service", func() {
 			Version: "1.0",
 			Features: map[string]cfg.Feature{
 				"stripe_billing": {
-					Rules: []cfg.Rule{
-						{
-							Field:   "customer_id",
-							Exclude: []string{"321"},
+					Rules: cfg.Rules{
+						Disable: []cfg.DisableRule{
+							{
+								Field: "customer_id",
+								Values: cfg.MatchValues{
+									Eq: []string{"321"},
+								},
+							},
 						},
 					},
 				},
@@ -66,11 +76,22 @@ var _ = Describe("service", func() {
 			Version: "1.0",
 			Features: map[string]cfg.Feature{
 				"stripe_billing": {
-					Rules: []cfg.Rule{
-						{
-							Field:   "customer_id",
-							Include: []string{"123"},
-							Exclude: []string{"123"},
+					Rules: cfg.Rules{
+						Enable: []cfg.EnableRule{
+							{
+								Field: "customer_id",
+								Values: cfg.MatchValues{
+									Eq: []string{"123"},
+								},
+							},
+						},
+						Disable: []cfg.DisableRule{
+							{
+								Field: "customer_id",
+								Values: cfg.MatchValues{
+									Eq: []string{"123"},
+								},
+							},
 						},
 					},
 				},
@@ -83,10 +104,12 @@ var _ = Describe("service", func() {
 			Version: "1.0",
 			Features: map[string]cfg.Feature{
 				"stripe_billing": {
-					Rules: []cfg.Rule{
-						{
-							Field:  "customer_id",
-							Weight: 50,
+					Rules: cfg.Rules{
+						Enable: []cfg.EnableRule{
+							{
+								Field:  "customer_id",
+								Weight: 50,
+							},
 						},
 					},
 				},

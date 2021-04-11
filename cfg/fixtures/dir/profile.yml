@@ -4,8 +4,9 @@ features:
 
   profile_page_v2:
     rules:
-      - fields:
-          - "email"
-          - "customer_id"
-        weight: 10
+      enable:
+        - fields:
+            - "email"
+            - "customer_id"
+          weight: 10
 

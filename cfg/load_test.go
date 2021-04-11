@@ -15,25 +15,37 @@ var _ = Describe("cfg", func() {
 				Version: "1.0",
 				Features: map[string]Feature{
 					"profile_page_v2": {
-						Rules: []Rule{
-							{
-								Fields: []string{"email", "customer_id"},
-								Weight: 10,
+						Rules: Rules{
+							Enable: []EnableRule{
+								{
+									Fields: []string{"email", "customer_id"},
+									Weight: 10,
+								},
 							},
 						},
 					},
 					"stripe_billing": {
-						Rules: []Rule{
-							{
-								Field:   "customer_id",
-								Include: []string{"123", "456"},
-								Exclude: []string{"234", "567"},
-								Weight:  50,
+						Rules: Rules{
+							Enable: []EnableRule{
+								{
+									Field:  "customer_id",
+									Values: MatchValues{Eq: []string{"123", "456"}},
+									Weight: 50,
+								},
+								{
+									Field:  "customer_id",
+									Values: MatchValues{Eq: []string{"111"}},
+								},
 							},
-							{
-								Field:   "customer_id",
-								Include: []string{"111"},
-								Exclude: []string{"222"},
+							Disable: []DisableRule{
+								{
+									Field:  "customer_id",
+									Values: MatchValues{Eq: []string{"234", "567"}},
+								},
+								{
+									Field:  "customer_id",
+									Values: MatchValues{Eq: []string{"222"}},
+								},
 							},
 						},
 					},

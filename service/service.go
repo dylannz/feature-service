@@ -83,28 +83,28 @@ func (s Service) featureStatus(ctx context.Context, req spec.FeaturesRequest, fe
 		}
 	}
 
-	// first we deal with all exclude rules
-	if foreachField(feature.Rules, func(field string, rule cfg.Rule) bool {
-		t := varInSlice(rule.Exclude, field, vars)
-		logger.Debugf("check: field '%s' in %#v matches exclude rules %#v: %t", field, req.Vars, rule.Exclude, t)
+	// first we deal with disable rules
+	if foreachDisableField(feature.Rules.Disable, func(field string, rule cfg.DisableRule) bool {
+		t := varInSlice(rule.Values.Eq, field, vars)
+		logger.Debugf("check: field '%s' in %#v matches disable rules %#v: %t", field, req.Vars, rule.Values.Eq, t)
 		return t
 	}) {
-		logger.Debug("match: matched exclude rule")
+		logger.Debug("match: matched disable rule")
 		return res, nil
 	}
 
-	// now we deal with explicit includes
-	if foreachField(feature.Rules, func(field string, rule cfg.Rule) bool {
-		t := varInSlice(rule.Include, field, vars)
-		logger.Debugf("check: field '%s' in %#v matches include rules %#v: %t", field, req.Vars, rule.Exclude, t)
+	// now we deal with enable rules
+	if foreachEnableField(feature.Rules.Enable, func(field string, rule cfg.EnableRule) bool {
+		t := varInSlice(rule.Values.Eq, field, vars)
+		logger.Debugf("check: field '%s' in %#v matches enable rules %#v: %t", field, req.Vars, rule.Values.Eq, t)
 		return t
 	}) {
-		logger.Debug("match: matched include rule")
+		logger.Debug("match: matched enable rule")
 		res.AddStatus(featureName, true)
 		return res, nil
 	}
 
-	if ruleWeight(logger, feature.Rules, vars) {
+	if ruleWeight(logger, feature.Rules.Enable, vars) {
 		logger.Debug("match: matched weight rule")
 		res.AddStatus(featureName, true)
 		return res, nil
@@ -113,16 +113,16 @@ func (s Service) featureStatus(ctx context.Context, req spec.FeaturesRequest, fe
 	return res, nil
 }
 
-func ruleFields(rule cfg.Rule) []string {
-	if len(rule.Fields) == 0 {
-		return []string{rule.Field}
+func ruleFields(field string, fields []string) []string {
+	if len(fields) == 0 {
+		return []string{field}
 	}
-	return rule.Fields
+	return fields
 }
 
-func ruleWeight(logger logrus.FieldLogger, rules []cfg.Rule, vars map[string]string) bool {
-	var rule cfg.Rule
-	logger.Debugf("looking in %d rules for a rule with weight > 0...", len(rules))
+func ruleWeight(logger logrus.FieldLogger, rules []cfg.EnableRule, vars map[string]string) bool {
+	var rule cfg.EnableRule
+	logger.Debugf("looking in %d enable rules for a rule with weight > 0...", len(rules))
 	// find the first rule with weight > 0, ignore all others
 	for _, r := range rules {
 		if r.Weight > 0 {
@@ -140,7 +140,7 @@ func ruleWeight(logger logrus.FieldLogger, rules []cfg.Rule, vars map[string]str
 
 	// first build a string containing all the key/value pairs
 	b := bytes.Buffer{}
-	fields := ruleFields(rule)
+	fields := ruleFields(rule.Field, rule.Fields)
 	logger.Debugf("using keys/values from fields: %#v", fields)
 	for _, field := range fields {
 		b.WriteString(field)
@@ -168,9 +168,20 @@ func ruleWeight(logger logrus.FieldLogger, rules []cfg.Rule, vars map[string]str
 	return t
 }
 
-func foreachField(rules []cfg.Rule, fn func(string, cfg.Rule) bool) bool {
+func foreachDisableField(rules []cfg.DisableRule, fn func(string, cfg.DisableRule) bool) bool {
 	for _, rule := range rules {
-		for _, field := range ruleFields(rule) {
+		for _, field := range ruleFields(rule.Field, rule.Fields) {
+			if fn(field, rule) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func foreachEnableField(rules []cfg.EnableRule, fn func(string, cfg.EnableRule) bool) bool {
+	for _, rule := range rules {
+		for _, field := range ruleFields(rule.Field, rule.Fields) {
 			if fn(field, rule) {
 				return true
 			}
