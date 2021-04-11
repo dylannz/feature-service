@@ -21,6 +21,13 @@ features:
             eq:
               - "234"
               - "567"
+      set_vars: # set custom var 'foo' to value 'bar' if customer_id is '123'
+        - field: "customer_id"
+          values:
+            eq:
+              - "123"
+          set:
+            foo: bar
 
 
   profile_page_v2:

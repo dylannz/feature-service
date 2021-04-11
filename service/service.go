@@ -52,7 +52,7 @@ func (s Service) FeaturesStatus(ctx context.Context, req spec.FeaturesRequest, f
 
 		if r.Features != nil {
 			for k, v := range *r.Features {
-				res.AddStatus(k, *v.Enabled)
+				(*res.Features)[k] = v
 			}
 		}
 	}
@@ -89,7 +89,7 @@ func (s Service) featureStatus(ctx context.Context, req spec.FeaturesRequest, fe
 		logger.Debugf("check: field '%s' in %#v matches disable rules %#v: %t", field, req.Vars, rule.Values.Eq, t)
 		return t
 	}) {
-		logger.Debug("match: matched disable rule")
+		logger.Debug("match: matched values.eq rule")
 		return res, nil
 	}
 
@@ -99,48 +99,71 @@ func (s Service) featureStatus(ctx context.Context, req spec.FeaturesRequest, fe
 		logger.Debugf("check: field '%s' in %#v matches enable rules %#v: %t", field, req.Vars, rule.Values.Eq, t)
 		return t
 	}) {
-		logger.Debug("match: matched enable rule")
-		res.AddStatus(featureName, true)
+		logger.Debug("match: matched values.eq rule")
+		res.AddStatus(featureName, true, setVars(logger, feature.Rules.SetVars, vars))
 		return res, nil
 	}
 
-	if ruleWeight(logger, feature.Rules.Enable, vars) {
-		logger.Debug("match: matched weight rule")
-		res.AddStatus(featureName, true)
-		return res, nil
+	// now we deal with weight rules
+	for _, rule := range feature.Rules.Enable {
+		if ruleWeight(logger, ruleFields(rule.Field, rule.Fields), rule.Weight, vars) {
+			logger.Debug("match: matched weight rule")
+			res.AddStatus(featureName, true, setVars(logger, feature.Rules.SetVars, vars))
+			return res, nil
+		}
 	}
 
 	return res, nil
 }
 
+func setVars(logger logrus.FieldLogger, rules []cfg.SetVarRule, vars map[string]string) map[string]interface{} {
+	if len(rules) == 0 {
+		logger.Debug("no set_vars rules")
+		return nil
+	}
+
+	logrus.Debugf("checking %d set_vars rules", len(rules))
+
+	// now we deal with enable rules
+	setVars := map[string]interface{}{}
+	foreachSetVarField(rules, func(field string, rule cfg.SetVarRule) {
+		t := varInSlice(rule.Values.Eq, field, vars)
+		logger.Debugf("check: field '%s' in %#v matches set var rules %#v: %t", field, vars, rule.Values.Eq, t)
+		if t {
+			for k, v := range rule.Set {
+				setVars[k] = v
+			}
+		}
+	})
+
+	for _, rule := range rules {
+		if ruleWeight(logger, ruleFields(rule.Field, rule.Fields), rule.Weight, vars) {
+			for k, v := range rule.Set {
+				setVars[k] = v
+			}
+		}
+	}
+
+	logger.Debugf("finished checking %d set_vars rules", len(rules))
+
+	return setVars
+}
+
 func ruleFields(field string, fields []string) []string {
-	if len(fields) == 0 {
+	if field != "" {
 		return []string{field}
 	}
 	return fields
 }
 
-func ruleWeight(logger logrus.FieldLogger, rules []cfg.EnableRule, vars map[string]string) bool {
-	var rule cfg.EnableRule
-	logger.Debugf("looking in %d enable rules for a rule with weight > 0...", len(rules))
-	// find the first rule with weight > 0, ignore all others
-	for _, r := range rules {
-		if r.Weight > 0 {
-			rule = r
-			logger.Debugf("found a rule with weight > 0: %#v", rule)
-			break
-		}
-	}
-
-	// if no rules had weight > 0, we exit early
-	if rule.Weight == 0 {
-		logger.Debug("found no rules with weight > 0")
+func ruleWeight(logger logrus.FieldLogger, fields []string, weight int, vars map[string]string) bool {
+	if weight < 0 || weight > 100 {
+		logger.Debugf("weight (%d) outside range 0-100", weight)
 		return false
 	}
 
 	// first build a string containing all the key/value pairs
 	b := bytes.Buffer{}
-	fields := ruleFields(rule.Field, rule.Fields)
 	logger.Debugf("using keys/values from fields: %#v", fields)
 	for _, field := range fields {
 		b.WriteString(field)
@@ -163,8 +186,8 @@ func ruleWeight(logger logrus.FieldLogger, rules []cfg.EnableRule, vars map[stri
 		n |= uint64(uint8(h[i]))
 	}
 	c := int(n % 100)
-	t := c < rule.Weight
-	logger.Debugf("check: hash result < weight (%d < %d): %t", c, rule.Weight, t)
+	t := c < weight
+	logger.Debugf("check: hash result < weight (%d < %d): %t", c, weight, t)
 	return t
 }
 
@@ -185,6 +208,15 @@ func foreachEnableField(rules []cfg.EnableRule, fn func(string, cfg.EnableRule) 
 			if fn(field, rule) {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+func foreachSetVarField(rules []cfg.SetVarRule, fn func(string, cfg.SetVarRule)) bool {
+	for _, rule := range rules {
+		for _, field := range ruleFields(rule.Field, rule.Fields) {
+			fn(field, rule)
 		}
 	}
 	return false

@@ -12,6 +12,7 @@ type Feature struct {
 type Rules struct {
 	Enable  []EnableRule  `yaml:"enable"`
 	Disable []DisableRule `yaml:"disable"`
+	SetVars []SetVarRule  `yaml:"set_vars"`
 }
 
 type EnableRule struct {
@@ -29,6 +30,16 @@ type DisableRule struct {
 	Values MatchValues `yaml:"values"`
 }
 
+type SetVarRule struct {
+	Field  string   `yaml:"field"`
+	Fields []string `yaml:"fields"`
+
+	Values MatchValues `yaml:"values"`
+	Weight int         `yaml:"weight"`
+
+	Set map[string]interface{} `json:"set"`
+}
+
 type MatchValues struct {
 	Eq []string `json:"eq"`
 }
@@ -44,6 +55,7 @@ func (c *Config) Append(a Config) {
 		if f, ok := c.Features[name]; ok {
 			f.Rules.Enable = append(f.Rules.Enable, a.Features[name].Rules.Enable...)
 			f.Rules.Disable = append(f.Rules.Disable, a.Features[name].Rules.Disable...)
+			f.Rules.SetVars = append(f.Rules.SetVars, a.Features[name].Rules.SetVars...)
 			c.Features[name] = f
 		} else {
 			c.Features[name] = feature

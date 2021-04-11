@@ -27,8 +27,8 @@ var _ = Describe("httpsvc", func() {
 				FeaturesStatus(gomock.Any(), gomock.Any(), "").
 				Return(
 					spec.NewFeaturesResponse().
-						AddStatus("stripe_billing", true).
-						AddStatus("profile_page_v2", true),
+						AddStatus("stripe_billing", true, nil).
+						AddStatus("profile_page_v2", true, nil),
 					nil,
 				)
 
@@ -76,7 +76,7 @@ var _ = Describe("httpsvc", func() {
 				FeaturesStatus(gomock.Any(), gomock.Any(), "stripe_billing").
 				Return(
 					spec.NewFeaturesResponse().
-						AddStatus("stripe_billing", true),
+						AddStatus("stripe_billing", true, nil),
 					nil,
 				)
 
